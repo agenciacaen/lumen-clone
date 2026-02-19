@@ -8,11 +8,7 @@ declare global {
 const dbUrl = process.env.DATABASE_URL || "postgresql://postgres:password@localhost:5432/placeholder?schema=public";
 
 const prisma = globalThis.prisma ?? new PrismaClient({
-    datasources: {
-        db: {
-            url: dbUrl,
-        },
-    },
+    datasourceUrl: dbUrl,
 });
 
 if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
