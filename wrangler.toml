@@ -3,3 +3,11 @@ name = "lumen-clone"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output"
+
+[vars]
+DATABASE_URL = "postgresql://postgres:4384da6a2904cd9f4becce5acb59f879@91.99.226.184:5432/crmcaen?schema=public"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_d2VhbHRoeS1naG9zdC00NS5jbGVyay5hY2NvdW50cy5kZXYk"
+CLERK_SECRET_KEY = "sk_test_0OXs63rmcF4ioOGTyFJux2nfF3XHBqPFcauk9plND8"
+NEXT_PUBLIC_EVOLUTION_API_URL = "https://evoapi.agenciacaen.com.br"
+EVOLUTION_API_KEY = "39da3d9864a9b02f6f469325b4a574d9"
+NEXT_PUBLIC_APP_URL = "https://lumen-clone.pages.dev"
