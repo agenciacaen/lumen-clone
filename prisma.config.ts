@@ -5,5 +5,8 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
+  datasource: {
+    url: process.env.DATABASE_URL ?? "postgresql://postgres:placeholder@localhost:5432/placeholder",
+  },
 });
 
