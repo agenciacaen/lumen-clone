@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "pages:build": "npx prisma generate && npx @cloudflare/next-on-pages",
-    "pages:preview": "npx wrangler pages dev .vercel/output"
+    "pages:preview": "npx wrangler pages dev .vercel/output",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.38.0",
