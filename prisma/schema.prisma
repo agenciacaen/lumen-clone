@@ -1,0 +1,219 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  domain           String?  @unique
+  logoUrl          String?
+  primaryColor     String   @default("#7C3AED")
+  secondaryColor   String   @default("#4F46E5")
+  planType         String   @default("free") // free, pro, enterprise
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  users            User[]
+  contacts         Contact[]
+  deals            Deal[]
+  stages           Stage[]
+  aiAgents         AiAgent[]
+  whatsappInstances WhatsappInstance[]
+  tasks            Task[]
+  followUps        FollowUp[]
+  broadcastCampaigns BroadcastCampaign[]
+}
+
+model User {
+  id         String   @id @default(cuid())
+  clerkId    String   @unique
+  email      String
+  name       String
+  avatarUrl  String?
+  role       String   @default("member") // owner, admin, member
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  deals      Deal[]
+  tasks      Task[]
+  messages   Message[]
+}
+
+model Contact {
+  id          String    @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  whatsapp    String?
+  company     String?
+  position    String?
+  source      String?   // whatsapp, website, import, manual
+  tags        String[]
+  notes       String?
+  avatarUrl   String?
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  deals       Deal[]
+  messages    Message[]
+  tasks       Task[]
+  followUps   FollowUp[]
+}
+
+model Stage {
+  id        String   @id @default(cuid())
+  name      String
+  color     String   @default("#7C3AED")
+  order     Int      @default(0)
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  deals     Deal[]
+}
+
+model Deal {
+  id          String    @id @default(cuid())
+  title       String
+  value       Float     @default(0)
+  currency    String    @default("BRL")
+  status      String    @default("active") // active, won, lost
+  probability Int       @default(50)
+  closingDate DateTime?
+  notes       String?
+  tags        String[]
+  stageId     String
+  stage       Stage     @relation(fields: [stageId], references: [id])
+  contactId   String?
+  contact     Contact?  @relation(fields: [contactId], references: [id])
+  assignedToId String?
+  assignedTo  User?     @relation(fields: [assignedToId], references: [id])
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tasks       Task[]
+  activities  Activity[]
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  externalId  String?  // Evolution API message ID
+  content     String
+  type        String   @default("text") // text, image, audio, document, video
+  mediaUrl    String?
+  direction   String   // inbound, outbound
+  status      String   @default("sent") // sent, delivered, read, failed
+  wppInstance String?
+  sentAt      DateTime @default(now())
+  contactId   String?
+  contact     Contact? @relation(fields: [contactId], references: [id])
+  sentById    String?
+  sentBy      User?    @relation(fields: [sentById], references: [id])
+  tenantId    String
+
+  @@index([tenantId, contactId])
+  @@index([externalId])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  type        String    @default("call") // call, meeting, email, task, followup
+  status      String    @default("pending") // pending, done, cancelled
+  dueDate     DateTime?
+  contactId   String?
+  contact     Contact?  @relation(fields: [contactId], references: [id])
+  dealId      String?
+  deal        Deal?     @relation(fields: [dealId], references: [id])
+  assignedToId String?
+  assignedTo  User?     @relation(fields: [assignedToId], references: [id])
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String   // stage_changed, note_added, task_created, message_sent, deal_won, deal_lost
+  content   String
+  metadata  Json?
+  dealId    String?
+  deal      Deal?    @relation(fields: [dealId], references: [id])
+  tenantId  String
+  createdAt DateTime @default(now())
+}
+
+model AiAgent {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  personality  String   @default("professional")
+  isActive     Boolean  @default(true)
+  rules        Json     // JSON with trigger rules
+  systemPrompt String
+  wppInstance  String?  // bind to whatsapp instance
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model WhatsappInstance {
+  id           String   @id @default(cuid())
+  instanceName String
+  status       String   @default("disconnected") // connected, disconnected, qr_code
+  phoneNumber  String?
+  qrCode       String?
+  isActive     Boolean  @default(true)
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model FollowUp {
+  id          String    @id @default(cuid())
+  message     String
+  scheduledAt DateTime
+  status      String    @default("pending") // pending, sent, failed, cancelled
+  wppInstance String?
+  contactId   String
+  contact     Contact   @relation(fields: [contactId], references: [id])
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+}
+
+model BroadcastCampaign {
+  id          String    @id @default(cuid())
+  name        String
+  message     String
+  mediaUrl    String?
+  status      String    @default("draft") // draft, running, completed, paused
+  wppInstance String?
+  contactList Json      // array of phone numbers or contact IDs
+  delayMs     Int       @default(3000) // delay between messages
+  sentCount   Int       @default(0)
+  totalCount  Int       @default(0)
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
