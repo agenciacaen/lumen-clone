@@ -1,4 +1,7 @@
+export const runtime = 'edge';
+
 import { DashboardMetrics } from "@/components/dashboard/metrics";
+
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { FunnelChart } from "@/components/dashboard/funnel-chart";
 import { TopSellers } from "@/components/dashboard/top-sellers";
